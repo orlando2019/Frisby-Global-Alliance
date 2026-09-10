@@ -53,3 +53,9 @@ dist/
 *.log
 *.tmp
 *.bak
+
+# --- Auditoría, pruebas y herramientas privadas (solo locales) -----------
+/output/
+/.playwright-cli/
+/tmp/
+/local-tools/

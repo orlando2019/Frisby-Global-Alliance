@@ -74,7 +74,7 @@ del sitio son relativas, así que funciona igual en la raíz del dominio que baj
 ```
 index.html        los 11 slides, la navegación y el panel del asistente
 css/styles.css    tokens de color, escala tipográfica fluida, 3 cortes responsive
-js/slides.js      navegación, teclado, swipe, escalado automático, referencias
+js/slides.js      navegación, teclado, swipe, ajuste de altura, referencias
 js/chatbot.js     normalización, motor de coincidencia y respaldo embebido
 data/qa.json      las 24 entradas del asistente
 .nojekyll         desactiva el procesado con Jekyll en GitHub Pages
@@ -92,29 +92,62 @@ CONTENIDO_PORTAFOLIO.md   fuente única de todo el texto del sitio
 | Volver al inicio | Botón de casa, o tecla `Home` |
 | Ir al final | Tecla `End` |
 | Cerrar el asistente | Tecla `Esc` |
+| Reiniciar el chat | Botón «Reiniciar conversación»: borra mensajes y borrador, y restaura las preguntas sugeridas |
 | Enlace directo | `index.html#slide-9` abre directamente ese slide |
 
 Las marcas **Ref. N** que aparecen junto a las cifras llevan al slide 11 y
 resaltan la referencia correspondiente.
 
+El cuerpo conserva al menos 18 px en escritorio. Cuando el contenido no cabe,
+la diapositiva permite desplazamiento vertical. Las tablas anchas tienen su
+propio desplazamiento horizontal; ese gesto no cambia de diapositiva.
+En pantallas estrechas, la tira de indicadores también se puede desplazar.
+El chat ocupa la pantalla móvil y mantiene el foco en sus controles hasta cerrarlo.
+
+Para imprimir o guardar como PDF, usa la impresión del navegador. Las once
+secciones se incluyen completas; las más extensas pueden ocupar varias páginas.
+
 ---
 
 ## Sobre el contenido
 
-Todo el texto sale de `CONTENIDO_PORTAFOLIO.md` y **solo** de ahí. `data/qa.json`
-no se escribió a mano: se genera parseando la tabla del anexo de ese archivo,
-para que no pueda desviarse del original.
+El contenido académico y las respuestas salen de `CONTENIDO_PORTAFOLIO.md`.
+La diapositiva 9 añade una aclaración de auditoría sobre la diferencia de VAN,
+sin reemplazar las cifras originales. `data/qa.json` y el respaldo del chat se
+regeneran desde las 23 respuestas del anexo, más el agrupador de métricas.
 
 Dos cosas que conviene saber al revisar el sitio:
 
 - **El slide 9 muestra dos cifras distintas de VAN**: `663.686 €` en el tablero
   de decisión y `682.574 €` en la fila de carga fiscal 0% de la tabla de
   sensibilidad. Ambas vienen así del archivo de contenido y **se reproducen tal
-  cual, por decisión expresa**. No es un error de transcripción del sitio.
+  cual, por decisión expresa**. La diapositiva muestra ahora la diferencia de
+  18.888 € como pendiente de conciliación con el modelo de flujos.
 - **La palabra clave "sostenibilidad" está declarada en dos entradas del anexo**
-  (`cristal` y `ods`). El empate se resuelve por el orden del propio anexo, así
-  que responde `cristal`. La entrada `ods` sigue siendo accesible escribiendo
+  (`cristal` y `ods`). La consulta literal conserva la respuesta `cristal`.
+  Las otras consultas con empate no seleccionan automáticamente la primera
+  entrada. La entrada `ods` sigue siendo accesible escribiendo
   "ods" u "objetivo de desarrollo sostenible".
+
+## Archivos de trabajo y revisión local
+
+`output/`, `.playwright-cli/`, `tmp/` y `local-tools/` están excluidos de Git.
+Los informes, capturas, PDF de prueba y herramientas privadas no se publican.
+El documento fuente también permanece fuera del repositorio público.
+
+En el paquete de trabajo local, la herramienta sin dependencias permite:
+
+```bash
+python3 local-tools/sincronizar_chat.py --write
+python3 local-tools/sincronizar_chat.py
+```
+
+El primer comando regenera JSON y respaldo; el segundo comprueba su igualdad
+con el anexo. Un clon del repositorio público necesita el paquete privado de
+fuente y herramienta para reproducir esa generación.
+
+Antes de publicar, revisar en local y comprobar `git status --short` y
+`git diff`. La revisión local debe aprobarse antes del push.
 
 ---
 

@@ -17,7 +17,6 @@
   if (!deck || !slides.length) { return; }
 
   var TOTAL = slides.length;
-  var MIN_SCALE = 0.55;          // suelo del escalado; por debajo, scroll interno
   var current = 1;
   var mqMobile = window.matchMedia('(max-width: 640px)');
 
@@ -28,50 +27,32 @@
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'dot';
-    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-controls', s.id);
     b.setAttribute('aria-label', 'Ir al slide ' + n + ' de ' + TOTAL);
     b.addEventListener('click', function () { goTo(n); });
     dotsEl.appendChild(b);
     dots.push(b);
   });
 
-  /* -------------------------------------------------------- escalado ---- */
-  /* Las medidas de layout (offsetHeight/offsetWidth) no se ven afectadas por
-     CSS transforms, asi que se pueden leer sin desmontar la escala vigente:
-     no hay degradacion acumulada entre recalculos sucesivos. */
+  /* Centrar solo cuando cabe. El texto conserva su tamaño y, si necesita
+     más espacio, se lee mediante scroll desde el comienzo del slide. */
   function fitSlide(slide) {
     var inner = slide.querySelector('.slide-inner');
     if (!inner) { return; }
 
-    if (mqMobile.matches || slide.classList.contains('is-scrollable')) {
-      inner.style.removeProperty('--fit');
-      slide.classList.remove('is-overflowing');
-      return;
-    }
-
     var cs = getComputedStyle(slide);
     var availH = slide.clientHeight
                - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-    var availW = slide.clientWidth
-               - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    var natH = inner.offsetHeight;
-    var natW = inner.offsetWidth;
-
-    if (!natH || !natW || availH <= 0 || availW <= 0) { return; }
-
-    var scale = Math.min(1, availH / natH, availW / natW);
-
-    if (scale < MIN_SCALE) {
-      scale = MIN_SCALE;
-      slide.classList.add('is-overflowing');
-    } else {
-      slide.classList.remove('is-overflowing');
-    }
-
-    inner.style.setProperty('--fit', scale.toFixed(4));
+    slide.classList.toggle('is-overflowing', inner.offsetHeight > availH);
   }
 
-  function fitAll() { slides.forEach(fitSlide); }
+  function showCurrentDot() {
+    var activeDot = dots[current - 1];
+    if (!activeDot) { return; }
+    dotsEl.scrollLeft = activeDot.offsetLeft - dotsEl.offsetLeft
+                     - (dotsEl.clientWidth - activeDot.offsetWidth) / 2;
+  }
+  function fitAll() { slides.forEach(fitSlide); showCurrentDot(); }
 
   /* -------------------------------------------------------- navegacion -- */
   function goTo(n, opts) {
@@ -91,6 +72,7 @@
     dots.forEach(function (d, i) {
       d.setAttribute('aria-current', (i + 1) === n ? 'true' : 'false');
     });
+    showCurrentDot();
 
     curEl.textContent = n < 10 ? '0' + n : String(n);
     btnPrev.disabled = (n === 1);
@@ -130,6 +112,8 @@
     if (t && t.nodeType === 1 &&
         (t.closest('#chat') || t.tagName === 'INPUT' ||
          t.tagName === 'TEXTAREA' || t.isContentEditable)) { return; }
+    // Las tablas con scroll conservan sus flechas de desplazamiento.
+    if (t && t.nodeType === 1 && t.closest('.tbl-wrap')) { return; }
 
     if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); next(); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
@@ -141,23 +125,37 @@
   var sx = 0, sy = 0, tracking = false;
   var THRESHOLD = 50;
 
-  deck.addEventListener('pointerdown', function (e) {
-    if (e.pointerType === 'mouse') { return; }
-    tracking = true; sx = e.clientX; sy = e.clientY;
+  // Conservar el desplazamiento nativo de las tablas y el zoom con dos dedos.
+  deck.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1 || e.target.closest('a, button, .tbl-wrap')) {
+      tracking = false; return;
+    }
+    tracking = true; sx = e.touches[0].clientX; sy = e.touches[0].clientY;
   }, { passive: true });
 
-  deck.addEventListener('pointerup', function (e) {
+  deck.addEventListener('touchmove', function (e) {
+    if (!tracking || e.touches.length !== 1) { tracking = false; return; }
+    var dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+    if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) {
+      tracking = false; return;
+    }
+    if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) && e.cancelable) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  deck.addEventListener('touchend', function (e) {
     if (!tracking) { return; }
     tracking = false;
-    var dx = e.clientX - sx;
-    var dy = e.clientY - sy;
+    var dx = e.changedTouches[0].clientX - sx;
+    var dy = e.changedTouches[0].clientY - sy;
     // Exigir dominancia horizontal para no robarle el gesto al scroll
     // interno vertical de los slides 9 y 11.
     if (Math.abs(dx) < THRESHOLD || Math.abs(dx) <= Math.abs(dy)) { return; }
     if (dx < 0) { next(); } else { prev(); }
   }, { passive: true });
 
-  deck.addEventListener('pointercancel', function () { tracking = false; },
+  deck.addEventListener('touchcancel', function () { tracking = false; },
                         { passive: true });
 
   /* ------------------------------------------ marcas de referencia ------ */
@@ -214,6 +212,13 @@
   if (mqMobile.addEventListener) { mqMobile.addEventListener('change', onResize); }
 
   /* ------------------------------------------------------------ inicio -- */
+  document.querySelectorAll('.tbl-wrap').forEach(function (wrap) {
+    wrap.tabIndex = 0;
+    wrap.setAttribute('role', 'region');
+    var heading = wrap.parentElement.querySelector('h3, h4');
+    wrap.setAttribute('aria-label', (heading ? heading.textContent.trim() : 'Tabla')
+      + '. Desplazamiento horizontal disponible cuando sea necesario.');
+  });
   fitAll();
   if (!fromHash(true)) { goTo(1, { silent: true }); }
 

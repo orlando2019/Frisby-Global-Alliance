@@ -29,7 +29,7 @@
   /* Tipografia — piso de 18px en el cuerpo, esto se proyecta en un salon */
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --fs-body:   clamp(18px, 1.04vw, 21px);
-  --fs-small:  clamp(15px, .90vw, 18px);
+  --fs-small:  clamp(18px, 1.04vw, 21px);
   --fs-micro:  clamp(13px, .78vw, 15.5px);
   --fs-legal:  clamp(11px, .74vw, 13.5px);
   --fs-h2:     clamp(29px, 2.55vw, 51px);
@@ -104,29 +104,30 @@ button{
   top: 0;
   left: 0;
   width: 100%;
-  height: 100dvh;
+  height: calc(100dvh - var(--legal-h) - var(--hud-h) - 24px);
   transform: translate3d(calc((var(--n, 0) - var(--i, 0)) * 100%), 0, 0);
   transition: transform var(--trans);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
-  padding: clamp(20px, 2.4vh, 40px) clamp(24px, 3.2vw, 68px);
-  padding-bottom: calc(var(--legal-h) + var(--hud-h) + clamp(10px, 1.4vh, 22px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  touch-action: auto;
+  padding: clamp(20px, 2.4vh, 40px) clamp(72px, 5.3vw, 104px);
+  padding-bottom: 20px;
   background:
     radial-gradient(1200px 620px at 12% -8%, rgba(255,203,5,.13), transparent 62%),
     radial-gradient(1000px 560px at 100% 108%, var(--rojo-08), transparent 60%),
     linear-gradient(180deg, var(--blanco) 0%, var(--crema) 100%);
 }
 
-/* Envoltorio que escala. transform no altera el flujo, asi que el centrado
-   por flex del .slide sigue funcionando a cualquier escala. */
+/* El contenido no se reduce para encajar: conserva su tamaño de lectura. */
 .slide-inner{
   width: 100%;
+  min-width: 0;
+  flex: none;
   max-width: 1560px;
-  transform: scale(var(--fit, 1));
-  transform-origin: center center;
 }
 
 /* Slides 9 y 11: scroll interno en vez de escalado (decision de Orlando) */
@@ -207,13 +208,14 @@ strong{ font-weight: 700; }
 
 /* ------------------------------------------------------------ rejillas --- */
 .grid{ display: grid; gap: clamp(14px, 1.5vw, 28px); }
+.grid > *, .stack > *{ min-width: 0; }
 .g2{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .g3{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .g4{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .g5{ grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.g-7-5{ grid-template-columns: 7fr 5fr; }
-.g-5-7{ grid-template-columns: 5fr 7fr; }
-.g-1-1{ grid-template-columns: 1fr 1fr; }
+.g-7-5{ grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.g-5-7{ grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.g-1-1{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .stack{ display: grid; gap: clamp(10px, 1.15vh, 20px); align-content: start; }
 
 /* ------------------------------------------------------------- tarjetas -- */
@@ -290,9 +292,13 @@ strong{ font-weight: 700; }
 .tbl .n{ text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tbl .ok{ color: var(--rojo-oscuro); font-weight: 800; }
 .tbl-wrap{
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid var(--borde);
   border-radius: var(--radio-s);
-  overflow: hidden;
+  overflow-x: auto;
+  touch-action: pan-x pan-y pinch-zoom;
+  overscroll-behavior-x: contain;
   background: var(--blanco);
 }
 
@@ -417,7 +423,7 @@ strong{ font-weight: 700; }
   letter-spacing: -.01em;
 }
 .flow-d{
-  font-size: calc(var(--fs-micro) * .94);
+  font-size: var(--fs-small);
   line-height: 1.36;
   color: var(--gris);
 }
@@ -751,16 +757,19 @@ strong{ font-weight: 700; }
 }
 .hud-btn:hover{ background: var(--rojo-08); color: var(--rojo); }
 
-.dots{ display: flex; align-items: center; gap: 6px; }
+.dots{ display: flex; align-items: center; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
 .dot{
-  width: 11px; height: 11px;
+  width: 26px; height: 26px;
+  padding: 0;
+  flex: none;
   border-radius: 50%;
-  background: var(--borde-fuerte);
-  transition: background 200ms, width 200ms;
   position: relative;
 }
-.dot:hover{ background: var(--rojo-30); }
-.dot[aria-current="true"]{ background: var(--rojo); width: 26px; border-radius: 99px; }
+.dot::after{ content: ""; position: absolute; width: 11px; height: 11px;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  border-radius: 99px; background: var(--borde-fuerte); }
+.dot:hover::after{ background: var(--rojo-30); }
+.dot[aria-current="true"]::after{ background: var(--rojo); width: 22px; }
 
 .counter{
   font-size: var(--fs-micro);
@@ -829,6 +838,7 @@ strong{ font-weight: 700; }
   transition: opacity 220ms, transform 220ms;
 }
 .chat[hidden]{ display: none; }
+body.chat-modal .fab{ visibility: hidden; }
 .chat.is-closing, .chat.is-opening{ opacity: 0; transform: scale(.94) translateY(10px); }
 
 .chat-head{
@@ -848,6 +858,15 @@ strong{ font-weight: 700; }
   color: var(--blanco);
 }
 .chat-head .x:hover{ background: rgba(255,255,255,.18); }
+
+.chat-tools{ display: flex; justify-content: flex-end; flex: none; padding: 5px 12px; }
+.chat-reset{
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 36px; padding: 6px 10px;
+  font-size: var(--fs-micro); font-weight: 600;
+  color: var(--rojo-oscuro); border-radius: 8px;
+}
+.chat-reset:hover{ background: var(--rojo-08); }
 
 .chat-log{
   flex: 1 1 auto;
@@ -984,11 +1003,12 @@ strong{ font-weight: 700; }
   /* En movil el escalado se desactiva y los slides scrollean, tal como
      preveia la regla original ("sin scroll vertical en escritorio"). */
   .slide{
+    height: calc(100dvh - var(--legal-h) - 140px);
     justify-content: flex-start;
     overflow-y: auto;
     overscroll-behavior-y: contain;
     padding: 18px 16px;
-    padding-bottom: calc(var(--legal-h) + 78px);
+    padding-bottom: 18px;
   }
   .slide-inner{ transform: none !important; }
 
@@ -1015,14 +1035,14 @@ strong{ font-weight: 700; }
   .tbl th, .tbl td{ padding: 7px 8px; }
 
   /* Flechas mas grandes para el dedo */
-  .arrow{ width: 58px; height: 58px; }
+  .arrow{ width: 48px; height: 48px; top: auto; bottom: calc(var(--legal-h) + 68px); transform: none; }
   .arrow-prev{ left: 6px; }
-  .arrow-next{ right: 6px; }
+  .arrow-next{ left: 62px; right: auto; }
 
-  .hud{ bottom: calc(var(--legal-h) + 8px); padding: 6px 8px; gap: 4px; }
-  .dot{ width: 9px; height: 9px; }
-  .dot[aria-current="true"]{ width: 22px; }
-  .hud-btn{ width: 40px; height: 40px; }
+  .hud{ width: calc(100% - 24px); bottom: calc(var(--legal-h) + 8px); padding: 6px 8px; gap: 4px; }
+  .dots{ flex: 1; }
+  .dot{ width: 26px; height: 26px; }
+  .hud-btn{ width: 36px; height: 36px; flex: none; }
 
   .fab{
     width: 54px; height: 54px;
@@ -1059,9 +1079,32 @@ strong{ font-weight: 700; }
 }
 
 @media print{
-  .hud, .arrow, .fab, .chat{ display: none !important; }
+  @page{ size: A4 landscape; margin: 12mm; }
+  *, *::before, *::after{ box-shadow: none !important; text-shadow: none !important; }
+  :root{ --fs-body: 11pt; --fs-small: 11pt; --fs-micro: 9pt;
+    --fs-h2: 22pt; --fs-h3: 14pt; --fs-h4: 12pt; --fs-metric: 28pt; }
+  html, body, .deck{ height: auto; overflow: visible; background: white; }
+  .hud, .arrow, .fab, .chat, .legal{ display: none !important; }
   .deck{ display: block; }
-  .slide{ position: static; height: auto; transform: none !important;
-          page-break-after: always; overflow: visible; }
-  .slide-inner{ transform: none !important; }
+  .slide{ display: block; position: static; height: auto; padding: 0;
+    transform: none !important; transition: none; overflow: visible; background: white;
+    break-before: page; }
+  .slide:first-child{ break-before: auto; }
+  .slide-inner{ transform: none !important; max-width: none; }
+  .slide-head{ break-after: avoid; }
+  h1, h2, h3, h4{ break-after: avoid; }
+  .grid{ display: grid; gap: 4mm; }
+  .stack{ display: block; }
+  .g2, .g3, .g4, .g-7-5, .g-5-7, .g-1-1{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g5{ grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .grid > *, .stack > *{ margin-bottom: 3mm; }
+  .flow{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .card, .crit, .bang, .quad, .flow-step, .metric, .ref-item{ break-inside: avoid; box-shadow: none; }
+  .tbl-wrap{ overflow: visible; border: 0; }
+  .tbl{ font-size: 10pt; }
+  .tbl thead th, .tbl .n{ white-space: normal; }
+  tr{ break-inside: avoid; }
+  thead{ display: table-header-group; }
+  .refs-cols{ columns: 1; }
+  .ref-item a{ overflow-wrap: anywhere; }
 }
