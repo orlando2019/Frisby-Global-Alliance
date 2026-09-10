@@ -710,6 +710,64 @@ strong{ font-weight: 700; }
   background: rgba(255,255,255,.6);
 }
 
+/* ========== SLIDES 3, 6 y 8 · listas con vineta y arbol de problemas ===== */
+/* El reset global aplica list-style:none y hasta ahora el deck no tenia
+   ninguna lista de contenido, solo <ol class="flow">. Estas dos clases son
+   la unica adicion al CSS que traen los tres slides nuevos. */
+.bullets{
+  display: grid;
+  gap: .42em;
+  margin-top: .15em;
+}
+.bullets li{
+  position: relative;
+  padding-left: 1.05em;
+  line-height: 1.4;
+  color: var(--tinta-70);
+}
+.bullets li::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .7em;                       /* mitad de line-height: centra en la 1a linea */
+  transform: translateY(-50%);
+  width: .4em;
+  height: .4em;
+  border-radius: 50%;
+  background: var(--rojo-30);
+}
+
+/* Conector vertical del arbol de problemas. Apunta hacia arriba porque la
+   causalidad sube: causas -> problema central -> efectos. Los chevrones de
+   .flow-step no sirven aqui, estan atados a la rejilla horizontal de .flow. */
+.tree-arrow{
+  display: block;
+  position: relative;
+  height: 20px;
+  margin: -.2em 0;
+}
+.tree-arrow::before{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 20px;
+  background: var(--rojo-30);
+  transform: translateX(-50%);
+}
+.tree-arrow::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 1px;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--rojo);
+  border-left: 2px solid var(--rojo);
+  transform: translate(-50%, 0) rotate(45deg);
+}
+
 /* ================================================================= HUD == */
 .legal{
   position: fixed;

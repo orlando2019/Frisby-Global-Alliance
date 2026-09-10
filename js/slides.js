@@ -150,7 +150,7 @@
     var dx = e.changedTouches[0].clientX - sx;
     var dy = e.changedTouches[0].clientY - sy;
     // Exigir dominancia horizontal para no robarle el gesto al scroll
-    // interno vertical de los slides 9 y 11.
+    // interno vertical de los slides 12 y 14.
     if (Math.abs(dx) < THRESHOLD || Math.abs(dx) <= Math.abs(dy)) { return; }
     if (dx < 0) { next(); } else { prev(); }
   }, { passive: true });
@@ -165,7 +165,7 @@
     if (!a) { return; }
     e.preventDefault();
 
-    goTo(TOTAL);                                   // el slide 11 es Referencias
+    goTo(TOTAL);                                   // el slide 14 es Referencias
 
     var n = a.getAttribute('data-ref');
     var target = n ? document.getElementById('ref-' + n) : null;
