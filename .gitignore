@@ -1,0 +1,55 @@
+# =========================================================================
+# Portafolio Analítico · Frisby Global Alliance · Grupo 33
+# Este repositorio publica el SITIO. Los ficheros de trabajo se quedan
+# en iCloud y no viajan a GitHub.
+# =========================================================================
+
+# --- Documentación de trabajo -------------------------------------------
+# Se ignora todo el Markdown salvo el README, que es la portada del repo.
+# Esto deja fuera CONTENIDO_PORTAFOLIO.md y PROMPT_CLAUDE_CODE.md.
+*.md
+!README.md
+
+# --- Basura de macOS -----------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+.AppleDouble
+.LSOverride
+Icon
+
+# --- Marcadores de iCloud Drive -----------------------------------------
+# iCloud deja estos placeholders cuando descarga un fichero bajo demanda.
+*.icloud
+
+# --- Basura de Windows / Linux ------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*~
+.directory
+
+# --- Editores ------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# --- Por si alguna vez se añade tooling ---------------------------------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.cache/
+dist/
+.env
+.env.local
+
+# --- Logs y temporales ---------------------------------------------------
+*.log
+*.tmp
+*.bak
